@@ -45,6 +45,7 @@ func main() {
 	r.POST("/upload/excel", handlers.UploadExcel)
 
 	r.GET("/process/all", handlers.GetAllProcesses)
+	r.GET("/process/:id", handlers.GetProcessById)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
