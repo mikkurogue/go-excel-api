@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-backend/util"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -96,40 +97,40 @@ type ExcelToJson struct {
 	Assets                []EmissionAsset        `json:"assets"`
 }
 
-func ChannelShipmentSheet(file string, resultChan chan<- []Shipment) {
+func ChannelShipmentSheet(file string, result_channel chan<- []Shipment) {
 	time.Sleep(1 * time.Second)
-	result := ReadShipmentsSheet(file, MapSheetHeadersToStructure("Shipments", file))
-	resultChan <- result
+	result := ReadShipmentsSheet(file, MapSheetHeadersToStructure("shipments", file))
+	result_channel <- result
 }
 
-func ChannelAssetSheet(file string, resultChan chan<- []EmissionAsset) {
+func ChannelAssetSheet(file string, result_channel chan<- []EmissionAsset) {
 	time.Sleep(1 * time.Second)
-	result := ReadAssetsSheet(file, MapSheetHeadersToStructure("Emission assets", file))
-	resultChan <- result
+	result := ReadAssetsSheet(file, MapSheetHeadersToStructure("emission assets", file))
+	result_channel <- result
 }
 
 func ProcessExcel(file string) ExcelToJson {
 	color.Magenta("Start processing file")
 	defer util.TimeTrack(time.Now(), "ProcessExcel")
 
-	shipmentChannel := make(chan []Shipment)
-	assetChannel := make(chan []EmissionAsset)
+	shipment_channel := make(chan []Shipment)
+	asset_channel := make(chan []EmissionAsset)
 
-	go ChannelShipmentSheet(file, shipmentChannel)
-	go ChannelAssetSheet(file, assetChannel)
+	go ChannelShipmentSheet(file, shipment_channel)
+	go ChannelAssetSheet(file, asset_channel)
 
-	encShipments := <-shipmentChannel
-	encAssets := <-assetChannel
+	encocded_shipments := <-shipment_channel
+	encocded_assets := <-asset_channel
 
 	return ExcelToJson{
-		Shipments:             encShipments,
-		Assets:                encAssets,
-		MappedShipmentHeaders: MapSheetHeadersToStructure("Shipments", file),
-		MappedAssetHeaders:    MapSheetHeadersToStructure("Emission assets", file),
+		Shipments:             encocded_shipments,
+		Assets:                encocded_assets,
+		MappedShipmentHeaders: MapSheetHeadersToStructure("shipments", file),
+		MappedAssetHeaders:    MapSheetHeadersToStructure("emission assets", file),
 	}
 }
 
-func GetSheetHeaders(sheetName string, file string) []string {
+func GetSheetHeaders(sheet_name string, file string) []string {
 	f, err := excelize.OpenFile(file)
 
 	if err != nil {
@@ -143,7 +144,7 @@ func GetSheetHeaders(sheetName string, file string) []string {
 		}
 	}()
 
-	rows, err := f.GetRows(sheetName)
+	rows, err := f.GetRows(sheet_name)
 
 	if err != nil {
 		fmt.Println(err)
@@ -152,9 +153,9 @@ func GetSheetHeaders(sheetName string, file string) []string {
 	return rows[0]
 }
 
-func ReadShipmentsSheet(file string, knownHeaders map[string]interface{}) []Shipment {
+func ReadShipmentsSheet(file string, known_headers map[string]interface{}) []Shipment {
 
-	if knownHeaders == nil {
+	if known_headers == nil {
 		return nil
 	}
 
@@ -176,10 +177,10 @@ func ReadShipmentsSheet(file string, knownHeaders map[string]interface{}) []Ship
 	}
 
 	// Map headers to their indices
-	headerIndex := make(map[string]int)
+	header_index := make(map[string]int)
 	for i, header := range rows[0] {
-		if _, ok := knownHeaders[header]; ok {
-			headerIndex[header] = i
+		if _, ok := known_headers[header]; ok {
+			header_index[header] = i
 		}
 	}
 
@@ -190,12 +191,12 @@ func ReadShipmentsSheet(file string, knownHeaders map[string]interface{}) []Ship
 		shipment := Shipment{}
 		v := reflect.ValueOf(&shipment).Elem()
 
-		for jsonField, columnIndex := range headerIndex {
-			if columnIndex < len(row) {
-				value := row[columnIndex]
-				field := v.FieldByNameFunc(func(fieldName string) bool {
-					field, _ := v.Type().FieldByName(fieldName)
-					return field.Tag.Get("json") == jsonField
+		for json_field, col_index := range header_index {
+			if col_index < len(row) {
+				value := row[col_index]
+				field := v.FieldByNameFunc(func(field_name string) bool {
+					field, _ := v.Type().FieldByName(field_name)
+					return field.Tag.Get("json") == json_field
 				})
 				if field.IsValid() && field.CanSet() {
 					ptr := reflect.New(field.Type().Elem())
@@ -211,9 +212,9 @@ func ReadShipmentsSheet(file string, knownHeaders map[string]interface{}) []Ship
 	return shipments
 }
 
-func ReadAssetsSheet(file string, knownHeaders map[string]interface{}) []EmissionAsset {
+func ReadAssetsSheet(file string, known_headers map[string]interface{}) []EmissionAsset {
 
-	if knownHeaders == nil {
+	if known_headers == nil {
 		return nil
 	}
 
@@ -235,10 +236,10 @@ func ReadAssetsSheet(file string, knownHeaders map[string]interface{}) []Emissio
 	}
 
 	// Map headers to their indices
-	headerIndex := make(map[string]int)
+	header_index := make(map[string]int)
 	for i, header := range rows[0] {
-		if _, ok := knownHeaders[header]; ok {
-			headerIndex[header] = i
+		if _, ok := known_headers[header]; ok {
+			header_index[header] = i
 		}
 	}
 
@@ -249,12 +250,12 @@ func ReadAssetsSheet(file string, knownHeaders map[string]interface{}) []Emissio
 		asset := EmissionAsset{}
 		v := reflect.ValueOf(&asset).Elem()
 
-		for jsonField, columnIndex := range headerIndex {
-			if columnIndex < len(row) {
-				value := row[columnIndex]
-				field := v.FieldByNameFunc(func(fieldName string) bool {
-					field, _ := v.Type().FieldByName(fieldName)
-					return field.Tag.Get("json") == jsonField
+		for json_field, col_index := range header_index {
+			if col_index < len(row) {
+				value := row[col_index]
+				field := v.FieldByNameFunc(func(field_name string) bool {
+					field, _ := v.Type().FieldByName(field_name)
+					return field.Tag.Get("json") == json_field
 				})
 				if field.IsValid() && field.CanSet() {
 					ptr := reflect.New(field.Type().Elem())
@@ -272,12 +273,12 @@ func ReadAssetsSheet(file string, knownHeaders map[string]interface{}) []Emissio
 
 func FilterStructFields(obj interface{}, keys []string) map[string]interface{} {
 	value := reflect.ValueOf(obj)
-	typeVal := value.Type()
+	type_value := value.Type()
 
 	result := make(map[string]interface{})
 
 	for i := 0; i < value.NumField(); i++ {
-		field := typeVal.Field(i)
+		field := type_value.Field(i)
 		fieldValue := value.Field(i)
 
 		jsonTag := field.Tag.Get("json")
@@ -292,22 +293,22 @@ func FilterStructFields(obj interface{}, keys []string) map[string]interface{} {
 	return result
 }
 
-func MapSheetHeadersToStructure(sheetName string, file string) map[string]interface{} {
+func MapSheetHeadersToStructure(sheet_name string, file string) map[string]interface{} {
 
-	headers := GetSheetHeaders(sheetName, file)
+	headers := GetSheetHeaders(sheet_name, file)
 
 	if len(headers) == 0 {
-		fmt.Println("No headers found for sheet", sheetName)
+		fmt.Println("No headers found for sheet", sheet_name)
 		return nil
 	}
 
 	var result map[string]interface{}
 
-	if sheetName == "Shipments" {
+	if strings.ToLower(sheet_name) == "shipments" {
 		result = FilterStructFields(Shipment{}, headers)
 	}
 
-	if sheetName == "Emission assets" {
+	if strings.ToLower(sheet_name) == "emission assets" {
 		result = FilterStructFields(EmissionAsset{}, headers)
 	}
 

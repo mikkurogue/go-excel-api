@@ -28,7 +28,6 @@ func main() {
 	e.Use(middleware.BodyLimit("70M"))
 
 	e.GET("/core", handlers.Core)
-	e.GET("/core/:id", handlers.ItemById)
 
 	e.POST("/user/login", handlers.Login)
 
@@ -44,6 +43,8 @@ func main() {
 	r.GET("/user/profile", handlers.UserProfile)
 
 	r.POST("/upload/excel", handlers.UploadExcel)
+
+	r.GET("/process/all", handlers.GetAllProcesses)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

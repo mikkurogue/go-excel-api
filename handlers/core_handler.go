@@ -3,10 +3,8 @@ package handlers
 import (
 	"go-backend/core/jobs"
 	"io"
-	"math/rand"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -14,23 +12,6 @@ import (
 // route is /core
 func Core(c echo.Context) error {
 	return c.String(http.StatusOK, "Hello, World!")
-}
-
-// route would be /core/:id
-func ItemById(c echo.Context) error {
-	id := c.Param("id")
-
-	var content struct {
-		ID        string    `json:"id"`
-		Timestamp time.Time `json:"timestamp"`
-		Random    int       `json:"random"`
-	}
-
-	content.ID = id
-	content.Timestamp = time.Now().UTC()
-	content.Random = rand.Intn(1994)
-
-	return c.JSON(http.StatusOK, &content)
 }
 
 func UploadExcel(c echo.Context) error {
