@@ -33,7 +33,7 @@ The first sheet has 18 columns and 738625 rows. The second sheet has 5 columns a
 
 Processing takes on average, for this kind of file size and complexity to fully complete in around 4 minutes and 46 seconds. Which is by no means slow, which is why I'm happy with the results.
 
-[image](./benchmark_740k.png)
+![image](./benchmark_740k.png)
 
 ## Endpoints
 
