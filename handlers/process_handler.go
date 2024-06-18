@@ -15,7 +15,7 @@ func GetAllProcesses(c echo.Context) error {
 	if err != nil {
 		color.Red("Error: " + err.Error())
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
-			"errorCode": "0x009",
+			"error_ode": "0x009",
 			"message":   "Output directory does not exist, this means there are no processes complete.",
 		})
 	}
@@ -27,7 +27,8 @@ func GetAllProcesses(c echo.Context) error {
 
 	if len(processes) == 0 {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"message": "No processes found",
+			"error_code": "0x019",
+			"message":    "No processes found",
 		})
 	}
 
@@ -42,8 +43,8 @@ func GetProcessById(c echo.Context) error {
 	process_id := c.Param("id")
 	if process_id == "" {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"errorCode": "0x001",
-			"message":   "processId is required",
+			"error_code": "0x001",
+			"message":    "processId is required",
 		})
 	}
 
@@ -51,8 +52,8 @@ func GetProcessById(c echo.Context) error {
 	if err != nil {
 		color.Red("Error: " + err.Error())
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
-			"errorCode": "0x011",
-			"message":   "Shipments json file not found for process",
+			"error_code": "0x011",
+			"message":    "Shipments json file not found for process",
 		})
 	}
 
@@ -60,8 +61,8 @@ func GetProcessById(c echo.Context) error {
 	if err != nil {
 		color.Red("Error: " + err.Error())
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
-			"errorCode": "0x012",
-			"message":   "Assets json file not found for process",
+			"error_code": "0x012",
+			"message":    "Assets json file not found for process",
 		})
 	}
 
@@ -72,7 +73,7 @@ func GetProcessById(c echo.Context) error {
 	if err != nil {
 		color.Red("Error unmarshalling shipments: " + err.Error())
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"errorCode": "0x013",
+			"error_ode": "0x013",
 			"message":   "Error unmarshalling shipments json",
 		})
 	}
@@ -81,7 +82,7 @@ func GetProcessById(c echo.Context) error {
 	if err != nil {
 		color.Red("Error unmarshalling assets: " + err.Error())
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"errorCode": "0x014",
+			"error_ode": "0x014",
 			"message":   "Error unmarshalling assets json",
 		})
 	}

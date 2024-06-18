@@ -49,7 +49,7 @@ func UploadExcel(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]any{
 		"message":    "success",
-		"filename":   file.Filename,
+		"file_name":  file.Filename,
 		"size":       file.Size,
 		"process_id": jobs.ProcessId,
 	},
