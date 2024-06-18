@@ -11,17 +11,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type CoreJobExcelExecutor interface {
-	Start(fileName string)
-	AssignProcessId()
-	ExportProcessJsonFiles()
-}
-
+// Assign this structure to have specific methods and properties
 type CoreJobExcel struct {
-	CoreJobExcelExecutor
-	ProcessId string
-	Started   bool
-	Finished  bool
+	CoreJobExcecutor
+	JobStatus
 	Shipments []core.Shipment
 	Assets    []core.EmissionAsset
 }
