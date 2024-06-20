@@ -15,7 +15,7 @@ func GetAllProcesses(c echo.Context) error {
 	if err != nil {
 		color.Red("Error: " + err.Error())
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
-			"error_ode": "0x009",
+			"error_code": "0x009",
 			"message":   "Output directory does not exist, this means there are no processes complete.",
 		})
 	}
