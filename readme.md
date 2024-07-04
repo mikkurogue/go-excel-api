@@ -42,7 +42,7 @@ Benchmark 1: Macbook pro running M3 chip Running Mac Os whatever the latest one 
 ![image](./benchmark_740k.png)
 
 Benchmark 2: AMD Ryzen 5 5600X @ 3.95 GHz + 32GB DDR4 @ 3600 MHz running Pop_OS 22.04 LTS
-![image](.benchmark_740k_linux.png)
+![image](./benchmark_740k_linux.png)
 
 ## Endpoints
 
