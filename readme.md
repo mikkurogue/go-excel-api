@@ -49,7 +49,7 @@ Benchmark 2: AMD Ryzen 5 5600X @ 3.95 GHz + 32GB DDR4 @ 3600 MHz running Pop_OS 
 ![image](./benchmark_740k_linux.png)
 
 Second benchmark after some "optimization" however im not sure what exactly is optimized.
-![image](./benchmark_740k_linux_optimized.png)
+![image](./bnechmark_740k_linux_optimized.png)
 
 Conclusion: after these tests, I am fairly certain that we can get it running much faster.
 
