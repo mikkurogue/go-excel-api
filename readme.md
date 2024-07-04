@@ -33,9 +33,21 @@ The first sheet has 18 columns and 738625 rows. The second sheet has 5 columns a
 
 Processing takes on average, for this kind of file size and complexity to fully complete in around 4 minutes and 46 seconds. Which is by no means slow, which is why I'm happy with the results.
 
+*Update*: benchmark also done on a different machine running linux. 
+
+I'm happy with the results, given the Ryzen 5 5600X is a much slower and older cpu but it does give me some hope that I can speed this process up even more with some efficiency and potentially better usage of goroutines
+
+
+Benchmark 1: Macbook pro running M3 chip Running Mac Os whatever the latest one s
 ![image](./benchmark_740k.png)
 
+Benchmark 2: AMD Ryzen 5 5600X @ 3.95 GHz + 32GB DDR4 @ 3600 MHz running Pop_OS 22.04 LTS
+![image](.benchmark_740k_linux.png)
+
 ## Endpoints
+
+For easier testing purposes, I have remove the "auth" requirement on the process and upload endpoints.
+The auth enpoints here are generally only for "fun" and for me to remember that i can also just make this into a backend for an app if I really want to.
 
 ### POST /user/login
 Payload
@@ -54,13 +66,7 @@ Headers
 }
 ```
 
-### POST /auth/upload/excel
-Headers
-```json
-{
-    "Authorization": Bearer <token
-}
-```
+### POST /upload/excel
 Payload (Multipart form data)
 ```json
 {
@@ -68,18 +74,8 @@ Payload (Multipart form data)
 }
 ```
 
-### GET /auth/process/all
-Headers
-```json
-{
-    "Authorization": Bearer <token>
-}
-```
+### GET /process/all
 
-### GET /auth/process/:id
-Headers
-```json
-{
-  "Authorization": Bearer <token>
-}
-```
+
+### GET /process/:id
+

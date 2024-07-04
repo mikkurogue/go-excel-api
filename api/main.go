@@ -31,6 +31,12 @@ func main() {
 
 	e.POST("/user/login", handlers.Login)
 
+
+	// for now un-authenticate these routes for easier testing.
+	e.POST("/upload/excel", handlers.UploadExcel)
+	e.GET("/process/all", handlers.GetAllProcesses)
+	e.GET("/process/:id", handlers.GetProcessById)
+
 	r := e.Group("/auth")
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
@@ -41,11 +47,7 @@ func main() {
 
 	r.Use(echojwt.WithConfig(config))
 	r.GET("/user/profile", handlers.UserProfile)
-
-	r.POST("/upload/excel", handlers.UploadExcel)
-
-	r.GET("/process/all", handlers.GetAllProcesses)
-	r.GET("/process/:id", handlers.GetProcessById)
+	
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
