@@ -31,7 +31,6 @@ The benchmark I used was essentially processing an excel file of around 740k row
 
 The first sheet has 18 columns and 738625 rows. The second sheet has 5 columns and 791 rows.
 
-Processing takes on average, for this kind of file size and complexity to fully complete in around 4 minutes and 46 seconds. Which is by no means slow, which is why I'm happy with the results.
 
 *Update*: benchmark also done on a different machine running linux. 
 
@@ -43,6 +42,12 @@ Benchmark 1: Macbook pro running M3 chip Running Mac Os whatever the latest one 
 
 Benchmark 2: AMD Ryzen 5 5600X @ 3.95 GHz + 32GB DDR4 @ 3600 MHz running Pop_OS 22.04 LTS
 ![image](./benchmark_740k_linux.png)
+Second benchmark after some "optimization" however im not sure what exactly is optimized.
+![image](./benchmark_740k_linux_optimized.png)
+
+Conclusion: after these tests, I am fairly certain that we can get it running much faster.
+
+On average on all machines, memory usage peaks at 9,7 GB during this process. On Linux the memory is variable and peaks at 9,7 GB and lows at around 3 GB. Idle usage is around 380 MB, but this probably drops drastically with the binary.
 
 ## Endpoints
 
