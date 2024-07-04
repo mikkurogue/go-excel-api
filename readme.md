@@ -6,6 +6,11 @@ There is some authentication in this, but no database or anything as of yet. It'
 
 None of this is actually production worthy or ready for any real world use.
 
+# Main TODO's
+
+- figure out an optimzation strategy for concurrency and memory usage.
+- figure out how to filter out null values from the json output so the file size isn't bloated with lots of empty entries
+
 ## Dependencies
 
 All required packages are listed in the go.mod file. You can install them by running `go mod tidy`.
