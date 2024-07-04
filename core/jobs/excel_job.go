@@ -103,3 +103,14 @@ func (c *CoreJobExcel) Abort(reason string) core.ParseError {
 		Error: errors.New(reason),
 	}
 }
+
+func (c * CoreJobExcel) DeleteProcess(processId string) core.ParseError {
+	dir := filepath.Join("output", processId)
+	if err := os.RemoveAll(dir); err != nil {
+		color.Red("Error deleting directory '%s': %v", dir, err)
+		return core.ParseError{
+			Error: err,
+		}
+	}
+	return core.ParseError{}
+}

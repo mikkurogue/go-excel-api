@@ -70,3 +70,14 @@ func UploadExcel(c echo.Context) error {
 	},
 	)
 }
+
+func DeleteProcess(c echo.Context) error {
+	processId := c.Param("id")
+	jobs := jobs.CoreJobExcel{}
+	jobs.DeleteProcess(processId)
+	return c.JSON(http.StatusOK, map[string]any{
+		"message":    "success",
+		"process_id": processId,
+	},
+	)
+}

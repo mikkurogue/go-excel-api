@@ -37,6 +37,8 @@ func main() {
 	e.GET("/process/all", handlers.GetAllProcesses)
 	e.GET("/process/:id", handlers.GetProcessById)
 
+	e.DELETE("/process/:id", handlers.DeleteProcess)
+
 	r := e.Group("/auth")
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
