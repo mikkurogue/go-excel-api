@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"encoding/json"
+	"errors"
 	"go-backend/core"
 	"log"
 	"os"
@@ -19,17 +20,27 @@ type CoreJobExcel struct {
 	Assets    []core.EmissionAsset
 }
 
-func (c *CoreJobExcel) Start(file_name string) {
+func (c *CoreJobExcel) Start(fileName string) (core.ParseError) {
 	c.Started = true
 	c.Finished = false
-	data := core.ProcessExcel(file_name)
+	data, err := core.ProcessExcel(fileName)
+
+	if err.Error != nil {
+		color.Red("Error processing file: %v", err.Error)
+		log.Fatal(err.Error)
+		// naked return here to abort the rest of the function
+		return c.Abort("process aborted die to error in file processing")
+	}
 
 	c.Shipments = data.Shipments
 	c.Assets = data.Assets
 
 	c.ExportProcessJsonFiles()
 
-	c.DeleteFileOnComplete(file_name)
+	c.DeleteFileOnComplete(fileName)
+
+	// test to return an empty error meaning its "fine" as the error should be nil
+	return core.ParseError{}
 }
 
 func (c *CoreJobExcel) AssignProcessId() {
@@ -47,27 +58,27 @@ func (c *CoreJobExcel) ExportProcessJsonFiles() {
 	}
 
 	// Marshal shipments to JSON
-	shipments, shipments_err := json.MarshalIndent(c.Shipments, "", "    ")
-	if shipments_err != nil {
-		color.Red("Error marshalling shipments to JSON: %v", shipments_err)
+	shipments, shipmentsError := json.MarshalIndent(c.Shipments, "", "    ")
+	if shipmentsError != nil {
+		color.Red("Error marshalling shipments to JSON: %v", shipmentsError)
 	}
 
 	// Marshal assets to JSON
-	assets, assets_err := json.MarshalIndent(c.Assets, "", "    ")
-	if assets_err != nil {
-		color.Red("Error marshalling assets to JSON: %v", assets_err)
+	assets, assetsError := json.MarshalIndent(c.Assets, "", "    ")
+	if assetsError != nil {
+		color.Red("Error marshalling assets to JSON: %v", assetsError)
 	}
 
 	// Write shipments JSON to file
-	shipments_file_path := filepath.Join(dir, "shipments.json")
-	if shipments_err := os.WriteFile(shipments_file_path, shipments, 0644); shipments_err != nil {
-		color.Red("Error writing shipments JSON to file '%s': %v", shipments_file_path, shipments_err)
+	shipmentsFilePath := filepath.Join(dir, "shipments.json")
+	if shipmentsError := os.WriteFile(shipmentsFilePath, shipments, 0644); shipmentsError != nil {
+		color.Red("Error writing shipments JSON to file '%s': %v", shipmentsFilePath, shipmentsError)
 	}
 
 	// Write assets JSON to file
-	assets_file_path := filepath.Join(dir, "assets.json")
-	if assets_err := os.WriteFile(assets_file_path, assets, 0644); assets_err != nil {
-		color.Red("Error writing assets JSON to file '%s': %v", assets_file_path, assets_err)
+	assetsFilePath := filepath.Join(dir, "assets.json")
+	if assetsError := os.WriteFile(assetsFilePath, assets, 0644); assetsError != nil {
+		color.Red("Error writing assets JSON to file '%s': %v", assetsFilePath, assetsError)
 	}
 
 	color.HiGreen("Process %s finished\n", c.ProcessId)
@@ -79,10 +90,16 @@ func (c *CoreJobExcel) ExportProcessJsonFiles() {
 DeleteFileOnComplete deletes the file after the process is complete.
 We do this to remove disk space usage and clutter - lets hope this wouldnt be "unit" costs on cloud providers.
 */
-func (c *CoreJobExcel) DeleteFileOnComplete(file_name string) {
-	e := os.Remove(file_name)
+func (c *CoreJobExcel) DeleteFileOnComplete(fileName string) {
+	e := os.Remove(fileName)
 	if e != nil {
 		color.Red("Error deleting file: %v", e)
 		log.Fatal(e)
+	}
+}
+
+func (c *CoreJobExcel) Abort(reason string) core.ParseError {
+	return core.ParseError{
+		Error: errors.New(reason),
 	}
 }

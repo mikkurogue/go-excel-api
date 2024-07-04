@@ -40,15 +40,15 @@ func GetAllProcesses(c echo.Context) error {
 
 func GetProcessById(c echo.Context) error {
 
-	process_id := c.Param("id")
-	if process_id == "" {
+	processId := c.Param("id")
+	if processId == "" {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error_code": "0x001",
 			"message":    "processId is required",
 		})
 	}
 
-	shipment_file, err := util.ReadFile(process_id, "shipments.json")
+	shipmentFile, err := util.ReadFile(processId, "shipments.json")
 	if err != nil {
 		color.Red("Error: " + err.Error())
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
@@ -57,7 +57,7 @@ func GetProcessById(c echo.Context) error {
 		})
 	}
 
-	asset_file, err := util.ReadFile(process_id, "assets.json")
+	assetFile, err := util.ReadFile(processId, "assets.json")
 	if err != nil {
 		color.Red("Error: " + err.Error())
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
@@ -69,7 +69,7 @@ func GetProcessById(c echo.Context) error {
 	var shipments []core.Shipment
 	var assets []core.EmissionAsset
 
-	err = json.Unmarshal(shipment_file, &shipments)
+	err = json.Unmarshal(shipmentFile, &shipments)
 	if err != nil {
 		color.Red("Error unmarshalling shipments: " + err.Error())
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
@@ -78,7 +78,7 @@ func GetProcessById(c echo.Context) error {
 		})
 	}
 
-	err = json.Unmarshal(asset_file, &assets)
+	err = json.Unmarshal(assetFile, &assets)
 	if err != nil {
 		color.Red("Error unmarshalling assets: " + err.Error())
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{

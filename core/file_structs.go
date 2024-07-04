@@ -87,3 +87,7 @@ type ExcelToJson struct {
 	Shipments             []Shipment             `json:"shipments"`
 	Assets                []EmissionAsset        `json:"assets"`
 }
+
+type ParseError struct {
+	Error error `json:"error"`
+}

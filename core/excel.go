@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"go-backend/util"
 	"reflect"
@@ -11,40 +12,59 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func ChannelShipmentSheet(file string, result_channel chan<- []Shipment) {
+func ChannelShipmentSheet(file string, resultChannel chan<- []Shipment) {
 	time.Sleep(1 * time.Second)
-	result := ReadShipmentsSheet(file, MapSheetHeadersToStructure("shipments", file))
-	result_channel <- result
+
+	mapped, err := MapSheetHeadersToStructure(("shipments"), file)
+	if err != nil {
+		resultChannel <- nil
+	}
+
+	result, err := ReadShipmentsSheet(file, mapped)
+	if err != nil {
+		resultChannel <- nil
+	}
+
+	resultChannel <- result
 }
 
-func ChannelAssetSheet(file string, result_channel chan<- []EmissionAsset) {
+func ChannelAssetSheet(file string, resultChannel chan<- []EmissionAsset) {
 	time.Sleep(1 * time.Second)
-	result := ReadAssetsSheet(file, MapSheetHeadersToStructure("emission assets", file))
-	result_channel <- result
+
+	mapped, err := MapSheetHeadersToStructure(("emission assets"), file)
+	if err != nil {
+		resultChannel <- nil
+	}
+
+
+	result, err := ReadAssetsSheet(file, mapped)
+	if err != nil {
+		resultChannel <- nil
+	}
+
+	resultChannel <- result
 }
 
-func ProcessExcel(file string) ExcelToJson {
+func ProcessExcel(file string) (ExcelToJson, ParseError) {
 	color.Magenta("Start processing file")
 	defer util.TimeTrack(time.Now(), "ProcessExcel")
 
-	shipment_channel := make(chan []Shipment)
-	asset_channel := make(chan []EmissionAsset)
+	shipmentChannel := make(chan []Shipment)
+	assetChannel := make(chan []EmissionAsset)
 
-	go ChannelShipmentSheet(file, shipment_channel)
-	go ChannelAssetSheet(file, asset_channel)
+	go ChannelShipmentSheet(file, shipmentChannel)
+	go ChannelAssetSheet(file, assetChannel)
 
-	encocded_shipments := <-shipment_channel
-	encocded_assets := <-asset_channel
+	encocded_shipments := <-shipmentChannel
+	encocded_assets := <-assetChannel
 
 	return ExcelToJson{
 		Shipments:             encocded_shipments,
 		Assets:                encocded_assets,
-		MappedShipmentHeaders: MapSheetHeadersToStructure("shipments", file),
-		MappedAssetHeaders:    MapSheetHeadersToStructure("emission assets", file),
-	}
+	}, ParseError{}
 }
 
-func GetSheetHeaders(sheet_name string, file string) []string {
+func GetSheetHeaders(sheetName string, file string) []string {
 	f, err := excelize.OpenFile(file)
 
 	if err != nil {
@@ -58,7 +78,7 @@ func GetSheetHeaders(sheet_name string, file string) []string {
 		}
 	}()
 
-	rows, err := f.GetRows(sheet_name)
+	rows, err := f.GetRows(sheetName)
 
 	if err != nil {
 		fmt.Println(err)
@@ -67,16 +87,15 @@ func GetSheetHeaders(sheet_name string, file string) []string {
 	return rows[0]
 }
 
-func ReadShipmentsSheet(file string, known_headers map[string]interface{}) []Shipment {
+func ReadShipmentsSheet(file string, knownHeaders map[string]interface{}) ([]Shipment, error) {
 
-	if known_headers == nil {
-		return nil
+	if knownHeaders == nil {
+		return nil, errors.New("no known headers")
 	}
 
 	f, err := excelize.OpenFile(file)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return nil, errors.New("file not found")
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -86,15 +105,14 @@ func ReadShipmentsSheet(file string, known_headers map[string]interface{}) []Shi
 
 	rows, err := f.GetRows("Shipments")
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+	return nil, errors.New("no rows found")
 	}
 
 	// Map headers to their indices
-	header_index := make(map[string]int)
+	headerIndex := make(map[string]int)
 	for i, header := range rows[0] {
-		if _, ok := known_headers[header]; ok {
-			header_index[header] = i
+		if _, ok := knownHeaders[header]; ok {
+			headerIndex[header] = i
 		}
 	}
 
@@ -105,7 +123,7 @@ func ReadShipmentsSheet(file string, known_headers map[string]interface{}) []Shi
 		shipment := Shipment{}
 		v := reflect.ValueOf(&shipment).Elem()
 
-		for json_field, col_index := range header_index {
+		for json_field, col_index := range headerIndex {
 			if col_index < len(row) {
 				value := row[col_index]
 				field := v.FieldByNameFunc(func(field_name string) bool {
@@ -123,19 +141,18 @@ func ReadShipmentsSheet(file string, known_headers map[string]interface{}) []Shi
 		shipments = append(shipments, shipment)
 	}
 
-	return shipments
+	return shipments, nil
 }
 
-func ReadAssetsSheet(file string, known_headers map[string]interface{}) []EmissionAsset {
+func ReadAssetsSheet(file string, knownHeaders map[string]interface{}) ([]EmissionAsset, error) {
 
-	if known_headers == nil {
-		return nil
+	if knownHeaders == nil {
+		return nil, errors.New("no known headers")
 	}
 
 	f, err := excelize.OpenFile(file)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return nil, errors.New("file not found")
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -145,15 +162,14 @@ func ReadAssetsSheet(file string, known_headers map[string]interface{}) []Emissi
 
 	rows, err := f.GetRows("Emission assets")
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return nil, errors.New("no rows found")
 	}
 
 	// Map headers to their indices
-	header_index := make(map[string]int)
+	headerIndex := make(map[string]int)
 	for i, header := range rows[0] {
-		if _, ok := known_headers[header]; ok {
-			header_index[header] = i
+		if _, ok := knownHeaders[header]; ok {
+			headerIndex[header] = i
 		}
 	}
 
@@ -164,7 +180,7 @@ func ReadAssetsSheet(file string, known_headers map[string]interface{}) []Emissi
 		asset := EmissionAsset{}
 		v := reflect.ValueOf(&asset).Elem()
 
-		for json_field, col_index := range header_index {
+		for json_field, col_index := range headerIndex {
 			if col_index < len(row) {
 				value := row[col_index]
 				field := v.FieldByNameFunc(func(field_name string) bool {
@@ -182,17 +198,17 @@ func ReadAssetsSheet(file string, known_headers map[string]interface{}) []Emissi
 		assets = append(assets, asset)
 	}
 
-	return assets
+	return assets, nil
 }
 
-func FilterStructFields(obj interface{}, keys []string) map[string]interface{} {
+func FilterStructFields(obj interface{}, keys []string) (map[string]interface{}, error) {
 	value := reflect.ValueOf(obj)
-	type_value := value.Type()
+	typeValue := value.Type()
 
 	result := make(map[string]interface{})
 
 	for i := 0; i < value.NumField(); i++ {
-		field := type_value.Field(i)
+		field := typeValue.Field(i)
 		fieldValue := value.Field(i)
 
 		jsonTag := field.Tag.Get("json")
@@ -204,30 +220,41 @@ func FilterStructFields(obj interface{}, keys []string) map[string]interface{} {
 			}
 		}
 	}
-	return result
+
+	if len(result) == 0 { 
+		return nil, errors.New("no fields found")
+	
+	}
+
+	return result, nil
 }
 
-func MapSheetHeadersToStructure(sheet_name string, file string) map[string]interface{} {
+func MapSheetHeadersToStructure(sheetName string, file string) (map[string]interface{} ,error){
 
-	headers := GetSheetHeaders(sheet_name, file)
+	headers := GetSheetHeaders(sheetName, file)
 
 	if len(headers) == 0 {
-		fmt.Println("No headers found for sheet", sheet_name)
-		return nil
+		return nil, errors.New("no headers found for sheet " + sheetName)
 	}
 
-	var result map[string]interface{}
 
-	if strings.ToLower(sheet_name) == "shipments" {
-		result = FilterStructFields(Shipment{}, headers)
+	if strings.ToLower(sheetName) == "shipments" {
+		result, err := FilterStructFields(Shipment{}, headers)
+		if err != nil {
+			return nil, err
+		}
+
+		return result, nil
+
 	}
 
-	if strings.ToLower(sheet_name) == "emission assets" {
-		result = FilterStructFields(EmissionAsset{}, headers)
+	if strings.ToLower(sheetName) == "emission assets" {
+		result, err := FilterStructFields(EmissionAsset{}, headers)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
 	}
 
-	return result
-
-	// fmt.Println("Headers for sheet", sheetName, "are:", headers)
-
+	return nil, errors.New("no known sheet can be processed. processing: " + sheetName)
 }

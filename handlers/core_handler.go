@@ -18,12 +18,18 @@ func UploadExcel(c echo.Context) error {
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		return err
+		return c.JSON(http.StatusBadRequest, map[string]any{
+			"error": "0x901",
+			"message":    "no file found in request",
+		},)
 	}
 
 	src, err := file.Open()
 	if err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "0x1",
+			"message":    "server could not open file stream",
+		},)
 	}
 
 	// close file src
@@ -32,19 +38,28 @@ func UploadExcel(c echo.Context) error {
 	// destination
 	dst, err := os.Create(file.Filename)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "0x2",
+			"message":    "server could not create output directory for process",
+		},)
+
 	}
 	defer dst.Close()
 
 	// copy file
 	if _, err := io.Copy(dst, src); err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "0x3",
+			"message":    "server could not copy file to output directory",
+		},)
 	}
 
 	// start the process
 	jobs := jobs.CoreJobExcel{}
 
+	// figure out why this needs to be in a routine
 	go jobs.Start(file.Filename)
+	
 	jobs.AssignProcessId()
 
 	return c.JSON(http.StatusOK, map[string]any{
