@@ -55,6 +55,8 @@ Conclusion: after these tests, I am fairly certain that we can get it running mu
 
 On average on all machines, memory usage peaks at 9,7 GB during this process. On Linux the memory is variable and peaks at 9,7 GB and lows at around 3 GB. Idle usage is around 380 MB, but this probably drops drastically with the binary.
 
+Sidenote; all these results may vary depending on your machine and machine state of course.
+
 ## Endpoints
 
 For easier testing purposes, I have remove the "auth" requirement on the process and upload endpoints.
