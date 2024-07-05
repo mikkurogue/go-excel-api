@@ -74,10 +74,17 @@ func UploadExcel(c echo.Context) error {
 func DeleteProcess(c echo.Context) error {
 	processId := c.Param("id")
 	jobs := jobs.CoreJobExcel{}
-	jobs.DeleteProcess(processId)
+	err := jobs.DeleteProcess(processId)
+	if err.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "0x4",
+			"message":    "server could not delete process",
+		},)
+	}
+
 	return c.JSON(http.StatusOK, map[string]any{
 		"message":    "success",
+		"action": "process deleted",
 		"process_id": processId,
-	},
-	)
+	},)
 }
