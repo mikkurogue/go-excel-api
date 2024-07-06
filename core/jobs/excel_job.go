@@ -90,11 +90,15 @@ func (c *CoreJobExcel) ExportProcessJsonFiles() {
 DeleteFileOnComplete deletes the file after the process is complete.
 We do this to remove disk space usage and clutter - lets hope this wouldnt be "unit" costs on cloud providers.
 */
-func (c *CoreJobExcel) DeleteFileOnComplete(fileName string) {
+func (c *CoreJobExcel) DeleteFileOnComplete(fileName string) (core.ParseError, core.ParseSuccess) {
 	e := os.Remove(fileName)
 	if e != nil {
-		color.Red("Error deleting file: %v", e)
-		log.Fatal(e)
+		return core.ParseError{
+			Error: errors.New("can not remove process file(s)"),
+		}, core.ParseSuccess{}
+	}
+	return core.ParseError{}, core.ParseSuccess{
+		Message: "successfully removed process file(s)",
 	}
 }
 
@@ -104,13 +108,14 @@ func (c *CoreJobExcel) Abort(reason string) core.ParseError {
 	}
 }
 
-func (c * CoreJobExcel) DeleteProcess(processId string) core.ParseError {
+func (c *CoreJobExcel) DeleteProcess(processId string) (core.ParseError, core.ParseSuccess) {
 	dir := filepath.Join("output", processId)
 	if err := os.RemoveAll(dir); err != nil {
 		color.Red("Error deleting directory '%s': %v", dir, err)
 		return core.ParseError{
 			Error: err,
-		}
+		}, core.ParseSuccess{}
 	}
-	return core.ParseError{}
+	return core.ParseError{}, core.ParseSuccess{ Message: "Deleted process directory" }
 }
+

@@ -91,3 +91,8 @@ type ExcelToJson struct {
 type ParseError struct {
 	Error error `json:"error"`
 }
+
+type ParseSuccess struct {
+	Message string `json:"message"`
+}
+

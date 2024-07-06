@@ -42,14 +42,14 @@ func Login(c echo.Context) error {
 	// create token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	t, err := token.SignedString([]byte("secret"))
+	accessToken, err := token.SignedString([]byte("secret"))
 
 	if err != nil {
 		return err
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"access_token": t,
+		"access_token": accessToken,
 	})
 }
 
