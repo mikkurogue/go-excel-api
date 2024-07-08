@@ -1,10 +1,13 @@
 package main
 
 import (
+	"go-backend/db"
 	"go-backend/handlers"
 	"log"
+	"os"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -12,6 +15,18 @@ import (
 
 func main() {
 	e := echo.New()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading environment variables")
+	}
+
+	database, err := db.Init(os.Getenv("TURSO_DB_NAME"), os.Getenv("TURSO_AUTH_TOKEN"))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	database.CreateConnection()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
@@ -31,7 +46,6 @@ func main() {
 
 	e.POST("/user/login", handlers.Login)
 
-
 	// for now un-authenticate these routes for easier testing.
 	e.POST("/upload/excel", handlers.UploadExcel)
 	e.GET("/process/all", handlers.GetAllProcesses)
@@ -49,7 +63,6 @@ func main() {
 
 	r.Use(echojwt.WithConfig(config))
 	r.GET("/user/profile", handlers.UserProfile)
-	
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
