@@ -36,7 +36,6 @@ func ChannelAssetSheet(file string, resultChannel chan<- []EmissionAsset) {
 		resultChannel <- nil
 	}
 
-
 	result, err := ReadAssetsSheet(file, mapped)
 	if err != nil {
 		resultChannel <- nil
@@ -59,8 +58,8 @@ func ProcessExcel(file string) (ExcelToJson, ParseError) {
 	encocded_assets := <-assetChannel
 
 	return ExcelToJson{
-		Shipments:             encocded_shipments,
-		Assets:                encocded_assets,
+		Shipments: encocded_shipments,
+		Assets:    encocded_assets,
 	}, ParseError{}
 }
 
@@ -105,7 +104,7 @@ func ReadShipmentsSheet(file string, knownHeaders map[string]interface{}) ([]Shi
 
 	rows, err := f.GetRows("Shipments")
 	if err != nil {
-	return nil, errors.New("no rows found")
+		return nil, errors.New("no rows found")
 	}
 
 	// Map headers to their indices
@@ -221,22 +220,21 @@ func FilterStructFields(obj interface{}, keys []string) (map[string]interface{},
 		}
 	}
 
-	if len(result) == 0 { 
+	if len(result) == 0 {
 		return nil, errors.New("no fields found")
-	
+
 	}
 
 	return result, nil
 }
 
-func MapSheetHeadersToStructure(sheetName string, file string) (map[string]interface{} ,error){
+func MapSheetHeadersToStructure(sheetName string, file string) (map[string]interface{}, error) {
 
 	headers := GetSheetHeaders(sheetName, file)
 
 	if len(headers) == 0 {
 		return nil, errors.New("no headers found for sheet " + sheetName)
 	}
-
 
 	if strings.ToLower(sheetName) == "shipments" {
 		result, err := FilterStructFields(Shipment{}, headers)
