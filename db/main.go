@@ -9,27 +9,27 @@ import (
 	"os"
 )
 
-type Db struct {
+type DbConfig struct {
 	DatabaseName   string
 	TursoAuthToken string
 }
 
-func Init(databaseName, tursoAuthToken string) (Db, error) {
+func Init(databaseName, tursoAuthToken string) (DbConfig, error) {
 
 	color.Yellow("initialising database connection configuration...")
 
 	if len(databaseName) == 0 || len(tursoAuthToken) == 0 {
-		return Db{}, errors.New("no database name or auth token provided")
+		return DbConfig{}, errors.New("no database name or auth token provided")
 	}
 
 	color.Green("successfully configured the connection!")
-	return Db{
+	return DbConfig{
 		DatabaseName:   databaseName,
 		TursoAuthToken: tursoAuthToken,
 	}, nil
 }
 
-func (database Db) CreateConnection() {
+func (database DbConfig) CreateConnection() *sql.DB {
 
 	color.Yellow("starting connection...")
 
@@ -45,5 +45,44 @@ func (database Db) CreateConnection() {
 
 	color.Green("successfully connected to database: " + database.DatabaseName)
 
-	defer db.Close()
+	// check when to close database connection
+	// defer db.Close()
+	return db
+}
+
+// test func for now to query users
+
+type User struct {
+	ID   int
+	Name string
+}
+
+func QueryUsers(database *sql.DB) []User {
+
+	rows, err := database.Query("SELECT * FROM users")
+	if err != nil {
+		color.Red("failed to execute query %v\n", err)
+		os.Exit(1)
+	}
+	defer rows.Close()
+
+	var users []User
+
+	for rows.Next() {
+		var user User
+
+		if err := rows.Scan(&user.ID, &user.Name); err != nil {
+			color.Red("error scanning row: %v", err)
+			return []User{}
+		}
+
+		users = append(users, user)
+		color.Green(string(user.ID), user.Name)
+	}
+
+	if err := rows.Err(); err != nil {
+		color.Red("error during row iteration: %v", err)
+	}
+
+	return users
 }

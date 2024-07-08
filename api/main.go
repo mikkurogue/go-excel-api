@@ -1,16 +1,16 @@
 package main
 
 import (
-	"go-backend/db"
-	"go-backend/handlers"
-	"log"
-	"os"
-
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go-backend/db"
+	"go-backend/handlers"
+	"log"
+	"os"
 )
 
 func main() {
@@ -26,7 +26,11 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	database.CreateConnection()
+	activeDatabase := database.CreateConnection()
+
+	usrs := db.QueryUsers(activeDatabase)
+
+	fmt.Println(usrs)
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
