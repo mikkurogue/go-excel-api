@@ -57,10 +57,14 @@ func (database DbConfig) CloseConnection(db *sql.DB) {
 // test func for now to query users
 
 type User struct {
-	ID   int
-	Name string
+	ID        string
+	Username  string
+	Password  string
+	createdOn string
+	lastLogin string
 }
 
+// broken func just here for reference for now
 func QueryUsers(database *sql.DB) []User {
 
 	rows, err := database.Query("SELECT * FROM users")
