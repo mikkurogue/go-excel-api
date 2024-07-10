@@ -33,7 +33,7 @@ func (database DbConfig) CreateConnection() *sql.DB {
 
 	color.Yellow("starting connection...")
 
-	url := fmt.Sprintf("libsql://%s.turso.io=authToken=%s",
+	url := fmt.Sprintf("libsql://%s.turso.io?authToken=%s",
 		database.DatabaseName,
 		database.TursoAuthToken)
 
@@ -48,6 +48,10 @@ func (database DbConfig) CreateConnection() *sql.DB {
 	// check when to close database connection
 	// defer db.Close()
 	return db
+}
+
+func (database DbConfig) CloseConnection(db *sql.DB) {
+	defer db.Close()
 }
 
 // test func for now to query users
